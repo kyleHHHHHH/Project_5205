@@ -1,0 +1,113 @@
+```{r}
+install.packages("rjson")
+
+# Load the package required to read JSON files.
+library("rjson")
+
+# Give the input file name to the function.
+result <- fromJSON(file = "yelp_academic_dataset_review.json")
+
+data <- jsonlite::stream_in(file("yelp_academic_dataset_review.json"),pagesize = 100)
+# Print the result.
+head(data)
+
+
+
+
+```
+
+
+
+# yelp_user
+```{r}
+yelp_user = read.csv("user.csv")
+str(yelp_user)
+sum(yelp_user$review_count)
+mean(yelp_user$review_count)# mean = 23.4
+max(yelp_user$review_count)# max = 17473
+median(yelp_user$review_count)# median = 5
+
+# distribution of review_count
+library(ggplot2)
+ggplot(data=yelp_user,aes(x=review_count))+
+  geom_histogram() + xlim (1,23)
+
+
+# Top 10 percent of users by comments
+number_review = quantile(yelp_user$review_count,0.9)
+yelp_user1 = yelp_user[which(yelp_user$review_count >= number_review),]
+str(yelp_user1)
+sum(yelp_user1$review_count)
+
+# distribution of review_count after filter
+library(ggplot2)
+ggplot(data=yelp_user1,aes(x=review_count))+
+  geom_histogram()
+
+
+
+```
+
+
+
+
+#review
+```{r}
+# import data
+yelp_review = read.csv("review.csv")
+str(yelp_review)
+
+# Review from 2017 - 2022
+yelp_review_new = yelp_review[grep('*2017|2018|2019|2020|2021|2022',yelp_review$date),]
+str(yelp_review_new)
+
+
+# split sample
+library(caTools)
+set.seed(11111)
+split = sample.split(Y = yelp_review$text, SplitRatio = 0.8)
+table(split)
+train = yelp_review[split,]
+test = yelp_review[!split,]
+
+
+# NA
+sum(is.na(test))
+
+# clean data
+
+library(tm); library(SnowballC); library(magrittr)
+corpus = Corpus(VectorSource(test$text))
+
+corpus = tm_map(corpus,FUN = removePunctuation)
+
+corpus = tm_map(corpus,
+                FUN = content_transformer(FUN = function(x)gsub(pattern = 'http[[:alnum:][:punct:]]*',
+                                                                replacement = ' ',x = x)))
+corpus = tm_map(corpus,
+                FUN = content_transformer(FUN = function(x)gsub(pattern = "[^[:alnum:]///']",
+                                                                replacement = ' ',x = x)))
+corpus = tm_map(corpus,FUN = content_transformer(tolower))
+
+corpus = tm_map(corpus,FUN = removeWords,c(stopwords('english')))
+
+corpus = tm_map(corpus,FUN = stripWhitespace)
+
+
+corpus[[51213]][1]
+
+# Create a document term matrix
+dtm = DocumentTermMatrix(corpus)
+dtm
+
+# Remove Sparse Terms
+xdtm = removeSparseTerms(dtm,sparse = 0.95)
+xdtm
+
+xdtm = as.data.frame(as.matrix(xdtm))
+
+sort(colSums(xdtm),decreasing = T)
+
+
+```
+
