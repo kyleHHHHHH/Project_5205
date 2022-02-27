@@ -1,25 +1,6 @@
-```{r}
-install.packages("rjson")
-
-# Load the package required to read JSON files.
-library("rjson")
-
-# Give the input file name to the function.
-result <- fromJSON(file = "yelp_academic_dataset_review.json")
-
-data <- jsonlite::stream_in(file("yelp_academic_dataset_review.json"),pagesize = 100)
-# Print the result.
-head(data)
-
-
-
-
-```
-
-
 
 # yelp_user
-```{r}
+
 yelp_user = read.csv("user.csv")
 str(yelp_user)
 sum(yelp_user$review_count)
@@ -45,14 +26,8 @@ ggplot(data=yelp_user1,aes(x=review_count))+
   geom_histogram()
 
 
-
-```
-
-
-
-
 #review
-```{r}
+
 # import data
 yelp_review = read.csv("review.csv")
 str(yelp_review)
@@ -109,5 +84,5 @@ xdtm = as.data.frame(as.matrix(xdtm))
 sort(colSums(xdtm),decreasing = T)
 
 
-```
+
 
